@@ -8,6 +8,8 @@ from PIL import Image
 
 pygame.init()
 
+API_KEY_GEOCODER = "40d1649f-0493-4b70-98ba-98533de7710b"
+
 
 def load_image(name, colorkey=None):
     fullname = name
@@ -25,42 +27,25 @@ def load_image(name, colorkey=None):
     return image
 
 
-API_KEY_GEOCODER = "40d1649f-0493-4b70-98ba-98533de7710b"
-geocoder_api_server = "http://geocode-maps.yandex.ru/1.x/"
-map_api_server = "http://static-maps.yandex.ru/1.x/"
+def get_map(ll, map_type="map", add_params=None):
+    map_params = {
+        "ll": ll,
+        "l": map_type
+    }
 
-geocoder_params = {
-    "apikey": API_KEY_GEOCODER,
-    "geocode": 'Австралия',
-    "format": "json"}
+    if isinstance(add_params, dict):
+        map_params.update(add_params)
 
-response = requests.get(geocoder_api_server, params=geocoder_params)
+    map_api_server = "http://static-maps.yandex.ru/1.x/"
 
-if response:
-    json_response = response.json()
-else:
-    raise RuntimeError(f'''Ошибка выполнения запроса: {response.url}\nHTTP статус:{response.status_code}({response.reason})''')
-
-toponym = json_response["response"]["GeoObjectCollection"]["featureMember"][0]["GeoObject"]
-toponym_coodrinates = toponym["Point"]["pos"]
-toponym_longitude, toponym_lattitude = toponym_coodrinates.split(" ")
-
-ll = ",".join([toponym_longitude, toponym_lattitude])
-
-envelope = toponym['boundedBy']['Envelope']
-l, b = envelope['lowerCorner'].split(' ')
-r, t = envelope['upperCorner'].split(' ')
-dx, dy = abs(float(l) - float(r)) / 2, abs(float(t) - float(b)) / 2
-spn = ','.join([str(dx), str(dy)])
+    response = requests.get(map_api_server, params=map_params)
+    return response
 
 
-map_params = {
-    "ll": ll,
-    "spn": spn,
-    "l": "sat,skl"
-}
+d, sh, m = input(), input(), int(input())
+coords = f'{d},{sh}'
+response = get_map(coords, add_params={"z": f"{m}"})
 
-response = requests.get(map_api_server, params=map_params)
 map_file = "map.png"
 with open(map_file, "wb") as file:
     file.write(response.content)
