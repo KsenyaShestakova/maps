@@ -58,23 +58,27 @@ class Data(Ui_MainWindow, QMainWindow):
                         self.sh -= 0.5 * (17 - self.sc)
                         if -90 <= self.sh <= 90:
                             self.old_sh = self.sh
+                        self.sh = self.old_sh
 
                     elif event.key == pygame.K_UP:
                         self.sh += 0.5 * (17 - self.sc)
                         if -90 <= self.sh <= 90:
                             self.old_sh = self.sh
+                        self.sh = self.old_sh
 
                     elif event.key == pygame.K_LEFT:
                         self.d -= 1 * (17 - self.sc)
                         if 0 <= self.sh <= 180:
-                            self.old_d = self.sh
+                            self.old_d = self.d
+                        self.d = self.old_d
 
                     elif event.key == pygame.K_RIGHT:
                         self.d += 1 * (17 - self.sc)
                         if 0 <= self.sh <= 180:
-                            self.old_d = self.sh
+                            self.old_d = self.d
+                        self.d = self.old_d
 
-                    self.ll = f'{self.old_d},{self.old_sh}'
+                    self.ll = f'{self.d},{self.sh}'
                     try:
                         response = get_map(self.ll, add_params={"z": f"{self.sc}"})
                         map_file = "map.png"
