@@ -61,17 +61,20 @@ while running:
 
         if event.type == pygame.KEYDOWN:
 
-            if event.key == pygame.K_PAGEUP:
+            if event.key == pygame.K_PAGEDOWN:
                 m += 1
+                if m > 17:
+                    m = 17
                 response = get_map(coords, add_params={"z": f"{m}"})
                 map_file = "map.png"
                 with open(map_file, "wb") as file:
                     file.write(response.content)
                 image = load_image('map.png')
 
-            elif event.key == pygame.K_PAGEDOWN:
+            elif event.key == pygame.K_PAGEUP:
                 m -= 1
-                if
+                if m < 0:
+                    m = 0
                 response = get_map(coords, add_params={"z": f"{m}"})
                 map_file = "map.png"
                 with open(map_file, "wb") as file:
