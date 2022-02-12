@@ -39,51 +39,52 @@ def get_map(ll, map_type="map", add_params=None):
     return response
 
 
-d, sh, m = input(), input(), int(input())
-coords = f'{d},{sh}'
-response = get_map(coords, add_params={"z": f"{m}"})
+if __name__ == '__main__':
+    d, sh, m = input(), input(), int(input())
+    coords = f'{d},{sh}'
+    response = get_map(coords, add_params={"z": f"{m}"})
 
-map_file = "map.png"
-with open(map_file, "wb") as file:
-    file.write(response.content)
+    map_file = "map.png"
+    with open(map_file, "wb") as file:
+        file.write(response.content)
 
-size = height, width = 600, 450
-screen = pygame.display.set_mode(size)
-image = load_image('map.png')
-screen.blit(image, (0, 0))
-pygame.display.flip()
-running = True
-while running:
-    for event in pygame.event.get():
-
-        if event.type == pygame.QUIT:
-            running = False
-
-        if event.type == pygame.KEYDOWN:
-
-            if event.key == pygame.K_PAGEDOWN:
-                m += 1
-                if m > 17:
-                    m = 17
-                response = get_map(coords, add_params={"z": f"{m}"})
-                map_file = "map.png"
-                with open(map_file, "wb") as file:
-                    file.write(response.content)
-                image = load_image('map.png')
-
-            elif event.key == pygame.K_PAGEUP:
-                m -= 1
-                if m < 0:
-                    m = 0
-                response = get_map(coords, add_params={"z": f"{m}"})
-                map_file = "map.png"
-                with open(map_file, "wb") as file:
-                    file.write(response.content)
-                image = load_image('map.png')
-
+    size = height, width = 600, 450
+    screen = pygame.display.set_mode(size)
+    image = load_image('map.png')
     screen.blit(image, (0, 0))
     pygame.display.flip()
+    running = True
+    while running:
+        for event in pygame.event.get():
 
-pygame.quit()
+            if event.type == pygame.QUIT:
+                running = False
 
-os.remove(map_file)
+            if event.type == pygame.KEYDOWN:
+
+                if event.key == pygame.K_PAGEDOWN:
+                    m += 1
+                    if m > 17:
+                        m = 17
+                    response = get_map(coords, add_params={"z": f"{m}"})
+                    map_file = "map.png"
+                    with open(map_file, "wb") as file:
+                        file.write(response.content)
+                    image = load_image('map.png')
+
+                elif event.key == pygame.K_PAGEUP:
+                    m -= 1
+                    if m < 0:
+                        m = 0
+                    response = get_map(coords, add_params={"z": f"{m}"})
+                    map_file = "map.png"
+                    with open(map_file, "wb") as file:
+                        file.write(response.content)
+                    image = load_image('map.png')
+
+        screen.blit(image, (0, 0))
+        pygame.display.flip()
+
+    pygame.quit()
+
+    os.remove(map_file)
