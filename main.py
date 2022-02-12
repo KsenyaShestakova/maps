@@ -1,10 +1,7 @@
 import os
 import sys
-from io import BytesIO
-
 import pygame as pygame
 import requests
-from PIL import Image
 
 pygame.init()
 
@@ -55,8 +52,35 @@ screen = pygame.display.set_mode(size)
 image = load_image('map.png')
 screen.blit(image, (0, 0))
 pygame.display.flip()
-while pygame.event.wait().type != pygame.QUIT:
-    pass
+running = True
+while running:
+    for event in pygame.event.get():
+
+        if event.type == pygame.QUIT:
+            running = False
+
+        if event.type == pygame.KEYDOWN:
+
+            if event.key == pygame.K_PAGEUP:
+                m += 1
+                response = get_map(coords, add_params={"z": f"{m}"})
+                map_file = "map.png"
+                with open(map_file, "wb") as file:
+                    file.write(response.content)
+                image = load_image('map.png')
+
+            elif event.key == pygame.K_PAGEDOWN:
+                m -= 1
+                if
+                response = get_map(coords, add_params={"z": f"{m}"})
+                map_file = "map.png"
+                with open(map_file, "wb") as file:
+                    file.write(response.content)
+                image = load_image('map.png')
+
+    screen.blit(image, (0, 0))
+    pygame.display.flip()
+
 pygame.quit()
 
 os.remove(map_file)
