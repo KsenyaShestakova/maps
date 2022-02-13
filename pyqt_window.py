@@ -30,14 +30,15 @@ class Data(Ui_MainWindow, QMainWindow):
         with open(map_file, "wb") as file:
             file.write(response.content)
 
-        size = height, width = 600, 450
+        size = height, width = 650, 500
         screen = pygame.display.set_mode(size)
         image = load_image('map.png')
-        screen.blit(image, (0, 0))
+        screen.blit(image, (10, 10))
         pygame.display.flip()
         running = True
         map_type = 'map'
         while running:
+            screen.fill('white')
             for event in pygame.event.get():
 
                 if event.type == pygame.QUIT:
@@ -56,25 +57,25 @@ class Data(Ui_MainWindow, QMainWindow):
                             self.sc = 0
 
                     elif event.key == pygame.K_DOWN:
-                        self.sh -= 0.5 * (17 - self.sc)
+                        self.sh -= 0.02 * ((17 - self.sc) / 2) ** 2
                         if -90 <= self.sh <= 90:
                             self.old_sh = self.sh
                         self.sh = self.old_sh
 
                     elif event.key == pygame.K_UP:
-                        self.sh += 0.5 * (17 - self.sc)
+                        self.sh += 0.02 * ((17 - self.sc) / 2) ** 2
                         if -90 <= self.sh <= 90:
                             self.old_sh = self.sh
                         self.sh = self.old_sh
 
                     elif event.key == pygame.K_LEFT:
-                        self.d -= 1 * (17 - self.sc)
+                        self.d -= 0.02 * (17 - self.sc) ** 2
                         if 0 <= self.sh <= 180:
                             self.old_d = self.d
                         self.d = self.old_d
 
                     elif event.key == pygame.K_RIGHT:
-                        self.d += 1 * (17 - self.sc)
+                        self.d += 0.02 * (17 - self.sc) ** 2
                         if 0 <= self.sh <= 180:
                             self.old_d = self.d
                         self.d = self.old_d
@@ -98,7 +99,8 @@ class Data(Ui_MainWindow, QMainWindow):
                     except Exception:
                         print('(((((')
 
-            screen.blit(image, (0, 0))
+            screen.blit(image, (10, 10))
+            self.print_text(screen)
             pygame.display.flip()
 
         pygame.quit()
@@ -106,7 +108,11 @@ class Data(Ui_MainWindow, QMainWindow):
         os.remove(map_file)
 
     def print_text(self, surface):
-        text = ['']
+        text = ['Q/W/E - схема/спутник/гибрид']
+        font = pygame.font.SysFont('arial', 20)
+        text = font.render(text[0], True, 'black')
+        x, y = 10, 460
+        surface.blit(text, (x, y))
 
 sys._excepthook = sys.excepthook
 
