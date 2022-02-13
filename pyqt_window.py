@@ -24,8 +24,8 @@ class Data(Ui_MainWindow, QMainWindow):
         self.old_d, self.old_sh = float(self.input_d.text()), float(self.input_sh.text())
         self.ll = f'{self.d},{self.sh}'
         self.sc = int(self.scale.currentText())
-        response = get_map(self.ll, add_params={"z": f"{self.sc}"})
 
+        response = get_map(self.ll, add_params={"z": f"{self.sc}"})
         map_file = "map.png"
         with open(map_file, "wb") as file:
             file.write(response.content)
@@ -36,6 +36,7 @@ class Data(Ui_MainWindow, QMainWindow):
         screen.blit(image, (0, 0))
         pygame.display.flip()
         running = True
+        map_type = 'map'
         while running:
             for event in pygame.event.get():
 
@@ -78,9 +79,18 @@ class Data(Ui_MainWindow, QMainWindow):
                             self.old_d = self.d
                         self.d = self.old_d
 
+                    elif event.key == pygame.K_q:
+                        map_type = 'map'
+
+                    elif event.key == pygame.K_w:
+                        map_type = 'sat'
+
+                    elif event.key == pygame.K_e:
+                        map_type = 'sat,skl'
+
                     self.ll = f'{self.d},{self.sh}'
                     try:
-                        response = get_map(self.ll, add_params={"z": f"{self.sc}"})
+                        response = get_map(self.ll, add_params={"z": f"{self.sc}"}, map_type=map_type)
                         map_file = "map.png"
                         with open(map_file, "wb") as file:
                             file.write(response.content)
@@ -95,6 +105,8 @@ class Data(Ui_MainWindow, QMainWindow):
 
         os.remove(map_file)
 
+    def print_text(self, surface):
+        text = ['']
 
 sys._excepthook = sys.excepthook
 
