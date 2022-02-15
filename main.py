@@ -6,6 +6,7 @@ import requests
 pygame.init()
 
 API_KEY_GEOCODER = "40d1649f-0493-4b70-98ba-98533de7710b"
+API_KEY_SEARCH = 'dda3ddba-c9ea-4ead-9010-f43fbc15c6e3'
 
 
 def load_image(name, colorkey=None):
@@ -37,6 +38,31 @@ def get_map(ll, map_type="map", add_params=None):
 
     response = requests.get(map_api_server, params=map_params)
     return response
+
+
+def find_organizations(ll, spn, request, lang="ru_RU"):
+    search_api_server = "https://search-maps.yandex.ru/v1/"
+    search_params = {
+        "apikey": API_KEY_SEARCH,
+        "text": request,
+        "ll": ll,
+        "spn": spn,
+        "lang": lang
+    }
+    response = requests.get(search_api_server, params=search_params)
+    if response:
+        json_response = response.json()
+    else:
+        raise RuntimeError(
+            f"""Ошибка выполнения запроса: {response.url}\nHTTP статус: {response.status_code}({response.reason})""")
+    organizations = json_response["features"]
+    return organizations
+
+
+def find_nearest_organization(ll, spn, request, lang="ru_RU"):
+    organizations = find_organizations(ll, spn, request, lang)
+    if len(organizations):
+        return organizations[0]
 
 
 if __name__ == '__main__':

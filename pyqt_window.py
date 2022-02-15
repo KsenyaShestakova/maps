@@ -5,7 +5,7 @@ import pygame
 
 from MainWindow import Ui_MainWindow
 from PyQt5.QtWidgets import *
-from main import get_map, load_image
+from main import get_map, load_image, find_nearest_organization
 
 pygame.init()
 
@@ -38,6 +38,7 @@ class Data(Ui_MainWindow, QMainWindow):
         size = height, width = 650, 500
         screen = pygame.display.set_mode(size)
         self.image = pygame.transform.scale(load_image('лупа.png'), (40, 40))
+        self.address = None
         image = load_image('map.png')
         screen.blit(image, (10, 10))
         pygame.display.flip()
@@ -98,9 +99,11 @@ class Data(Ui_MainWindow, QMainWindow):
                     if event.key == pygame.K_PAGEUP:
                         self.spn_x *= 2
                         self.spn_y *= 2
+
                     elif event.key == pygame.K_PAGEDOWN:
                         self.spn_x /= 2
                         self.spn_y /= 2
+
                     elif event.key == pygame.K_UP:
                         self.sh = (self.sh + 0.1 * self.spn_y) if (self.sh + 0.1 * self.spn_y) < 85 else 85
                     elif event.key == pygame.K_DOWN:
@@ -110,11 +113,17 @@ class Data(Ui_MainWindow, QMainWindow):
                     elif event.key == pygame.K_LEFT:
                         self.d = (self.d - 0.1 * self.spn_x) if (self.d - 0.1 * self.spn_x) > -180 else -180
 
+                    elif event.key == pygame.K_ESCAPE:
+                        self.address = None
+
                     self.ll = f'{self.d},{self.sh}'
                     self.spn = f'{self.spn_x},{self.spn_y}'
-                    print(self.spn)
                     try:
-                        response = get_map(self.ll, add_params={'spn': f'{self.spn}'}, map_type=map_type)
+                        if self.address:
+                            response = get_map(self.ll, add_params={'spn': f'{self.spn}',
+                                                                    'pt': f'{self.address},pm2rdm'}, map_type=map_type)
+                        else:
+                            response = get_map(self.ll, add_params={'spn': f'{self.spn}'}, map_type=map_type)
                         map_file = "map.png"
                         with open(map_file, "wb") as file:
                             file.write(response.content)
@@ -126,10 +135,24 @@ class Data(Ui_MainWindow, QMainWindow):
                     if 610 <= event.pos[0] <= 650 and 10 <= event.pos[1] <= 50:
                         name, ok_pressed = QInputDialog.getText(self, "Введите адрес", "Адрес:")
                         if ok_pressed:
-                            print(name)
-                            pass
+                            try:
+                                organization = find_nearest_organization(self.ll, self.spn, name)
 
+                                self.d, self.sh = organization["geometry"]["coordinates"]
+                                self.spn_x, self.spn_y = 0.01, 0.01
 
+                                self.address = ",".join(map(str, organization["geometry"]["coordinates"]))
+                                self.ll = f'{self.d},{self.sh}'
+                                self.spn = f'{self.spn_x},{self.spn_y}'
+
+                                response = get_map(self.ll, add_params={'spn': f'{self.spn}',
+                                                                        'pt': f'{self.address},pm2rdm'}, map_type=map_type)
+                                map_file = "map.png"
+                                with open(map_file, "wb") as file:
+                                    file.write(response.content)
+                                image = load_image('map.png')
+                            except Exception:
+                                print('(((((')
 
             screen.blit(image, (10, 10))
             self.print_text(screen)
@@ -141,7 +164,7 @@ class Data(Ui_MainWindow, QMainWindow):
         sys.exit(app.exec())
 
     def print_text(self, surface):
-        text = ['Q/W/E - схема/спутник/гибрид']
+        text = ['Q/W/E - схема/спутник/гибрид   Esc - очистить поиск']
         font = pygame.font.SysFont('arial', 20)
         text = font.render(text[0], True, 'black')
         x, y = 10, 460
