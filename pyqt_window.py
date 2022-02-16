@@ -5,7 +5,7 @@ import pygame
 
 from MainWindow import Ui_MainWindow
 from PyQt5.QtWidgets import *
-from main import get_map, load_image, find_nearest_organization
+from main import get_map, load_image, find_nearest_organization, get_index
 
 pygame.init()
 
@@ -35,10 +35,15 @@ class Data(Ui_MainWindow, QMainWindow):
         with open(map_file, "wb") as file:
             file.write(response.content)
 
-        size = height, width = 650, 500
+        size = height, width = 650, 550
         screen = pygame.display.set_mode(size)
         self.image = pygame.transform.scale(load_image('лупа.png'), (40, 40))
+
         self.address = None
+        self.address_p = ''
+        self.index = ''
+        self.index_is_show = True
+
         image = load_image('map.png')
         screen.blit(image, (10, 10))
         pygame.display.flip()
@@ -52,54 +57,16 @@ class Data(Ui_MainWindow, QMainWindow):
                     running = False
 
                 if event.type == pygame.KEYDOWN:
-
-                    """if event.key == pygame.K_PAGEDOWN:
-                        self.sc += 1
-                        if self.sc > 17:
-                            self.sc = 17
-
-                    elif event.key == pygame.K_PAGEUP:
-                        self.sc -= 1
-                        if self.sc < 0:
-                            self.sc = 0
-
-                    elif event.key == pygame.K_DOWN:
-                        self.sh -= 0.02 * ((17 - self.sc) / 2) ** 2
-                        if -85.5 <= self.sh <= 85.5:
-                            self.old_sh = self.sh
-                        self.sh = self.old_sh
-
-                    elif event.key == pygame.K_UP:
-                        self.sh += 0.02 * ((17 - self.sc) / 2) ** 2
-                        if -85.5 <= self.sh <= 85.5:
-                            self.old_sh = self.sh
-                        self.sh = self.old_sh
-
-                    elif event.key == pygame.K_LEFT:
-                        self.d -= 0.02 * (17 - self.sc) ** 2
-                        if 0 <= self.d <= 180:
-                            self.old_d = self.d
-                        self.d = self.old_d
-
-                    elif event.key == pygame.K_RIGHT:
-                        self.d += 0.02 * (17 - self.sc) ** 2
-                        if 0 <= self.d <= 180:
-                            self.old_d = self.d
-                        self.d = self.old_d"""
-
                     if event.key == pygame.K_q:
                         map_type = 'map'
-
                     elif event.key == pygame.K_w:
                         map_type = 'sat'
-
                     elif event.key == pygame.K_e:
                         map_type = 'sat,skl'
 
                     if event.key == pygame.K_PAGEUP:
                         self.spn_x *= 2
                         self.spn_y *= 2
-
                     elif event.key == pygame.K_PAGEDOWN:
                         self.spn_x /= 2
                         self.spn_y /= 2
@@ -115,6 +82,11 @@ class Data(Ui_MainWindow, QMainWindow):
 
                     elif event.key == pygame.K_ESCAPE:
                         self.address = None
+                        self.address_p = ''
+                        self.index = ''
+
+                    if event.key == pygame.K_i:
+                        self.index_is_show = not self.index_is_show
 
                     self.ll = f'{self.d},{self.sh}'
                     self.spn = f'{self.spn_x},{self.spn_y}'
@@ -144,6 +116,7 @@ class Data(Ui_MainWindow, QMainWindow):
                                 self.address = ",".join(map(str, organization["geometry"]["coordinates"]))
                                 self.ll = f'{self.d},{self.sh}'
                                 self.spn = f'{self.spn_x},{self.spn_y}'
+                                organization = find_nearest_organization(self.ll, self.spn, name)
 
                                 response = get_map(self.ll, add_params={'spn': f'{self.spn}',
                                                                         'pt': f'{self.address},pm2rdm'}, map_type=map_type)
@@ -154,8 +127,18 @@ class Data(Ui_MainWindow, QMainWindow):
                             except Exception:
                                 print('(((((')
 
+                            try:
+                                self.address_p = organization["properties"]["CompanyMetaData"]["address"]
+                                self.index = get_index(' '.join(self.address_p.split(', ')[-2:]))
+                            except Exception:
+                                self.address_p = organization["properties"]["name"]
+                                self.index = get_index(' '.join(self.address_p.split(', ')[-2:]))
+
             screen.blit(image, (10, 10))
-            self.print_text(screen)
+            if self.index_is_show and self.address != '':
+                self.print_text(screen, self.address_p, f"Индекс: {self.index}")
+            else:
+                self.print_text(screen, self.address_p)
             screen.blit(self.image, (610, 10))
             pygame.display.flip()
 
@@ -163,15 +146,14 @@ class Data(Ui_MainWindow, QMainWindow):
         os.remove(map_file)
         sys.exit(app.exec())
 
-    def print_text(self, surface):
-        text = ['Q/W/E - схема/спутник/гибрид   Esc - очистить поиск']
-        font = pygame.font.SysFont('arial', 20)
-        text = font.render(text[0], True, 'black')
-        x, y = 10, 460
-        surface.blit(text, (x, y))
-
-    def ret(self):
-        return self.d, self.sh, self.sc, self.is_do
+    def print_text(self, surface, text_address, index=''):
+        text = ['Q/W/E - схема/спутник/гибрид   Esc - очистить поиск  i - показывать индекс',
+                text_address, index]
+        font = pygame.font.SysFont('arial', 15)
+        for i, el in enumerate(text):
+            text = font.render(el, True, 'black')
+            x, y = 10, 460 + 17 * i
+            surface.blit(text, (x, y))
 
 
 sys._excepthook = sys.excepthook

@@ -56,13 +56,37 @@ def find_organizations(ll, spn, request, lang="ru_RU"):
         raise RuntimeError(
             f"""Ошибка выполнения запроса: {response.url}\nHTTP статус: {response.status_code}({response.reason})""")
     organizations = json_response["features"]
+
     return organizations
 
 
 def find_nearest_organization(ll, spn, request, lang="ru_RU"):
     organizations = find_organizations(ll, spn, request, lang)
     if len(organizations):
+        print(organizations[0])
         return organizations[0]
+
+
+def get_index(geocode):
+    geocoder_api_server = "http://geocode-maps.yandex.ru/1.x/"
+
+    geocoder_params = {
+        "apikey": API_KEY_GEOCODER,
+        "geocode": geocode,
+        "format": "json"}
+
+    response = requests.get(geocoder_api_server, params=geocoder_params)
+
+    if response:
+        json_response = response.json()
+    else:
+        raise RuntimeError(
+            f'''Ошибка выполнения запроса: {response.url}\nHTTP статус:{response.status_code}({response.reason})''')
+
+    toponym = json_response["response"]["GeoObjectCollection"]["featureMember"][0]["GeoObject"]
+    toponym_address = toponym["metaDataProperty"]["GeocoderMetaData"]["Address"]
+    postal_code = toponym_address["postal_code"]
+    return postal_code
 
 
 if __name__ == '__main__':
